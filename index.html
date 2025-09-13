@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institutional Financial Transparency Portal</title>
+    <style>
+        /* CSS for the dashboard */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        header {
+            background-color: #0056b3;
+            color: white;
+            padding: 2.5rem;
+            text-align: center;
+            border-bottom: 5px solid #004085;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #0056b3;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .metric-card {
+            background-color: #e9ecef;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .metric-card h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .metric-card p {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 0;
+        }
+        .chart-section, .table-section {
+            margin-bottom: 2rem;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .trace-id {
+            font-family: 'Courier New', Courier, monospace;
+            color: #d9534f;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            color: #777;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Institutional Financial Transparency Portal</h1>
+        <p>Bringing clarity and trust to how funds are utilized. Information is *authentic, **traceable, and **reliable*.</p>
+    </header>
+
+    <main class="container">
+        
+        <section class="metrics-section">
+            <h2>Key Financial Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Total Budget</h3>
+                    <p id="totalBudget"></p>
+                </div>
+                <div class="metric-card">
+                    <h3>Funds Allocated</h3>
+                    <p id="fundsAllocated"></p>
+                </div>
+                <div class="metric-card">
+                    <h3>Funds Remaining</h3>
+                    <p id="fundsRemaining"></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <h2>Budget Allocation Flow</h2>
+            <canvas id="flowChart"></canvas>
+        </section>
+        
+        <hr>
+        
+        <section class="table-section">
+            <h2>Detailed Transaction Log</h2>
+            <p>Every transaction is recorded with a unique, traceable ID to ensure authenticity.</p>
+            <table id="transactionTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Department</th>
+                        <th>Project/Vendor</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                        <th>Traceability ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 TransparentFlow Initiative. All data is securely logged and publicly accessible.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // JavaScript logic
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Simulated data. In a real-world app, this would be from a secure API.
+            const financialData = {
+                totalBudget: 10000000,
+                departments: [
+                    { name: 'Research & Development', allocation: 4000000 },
+                    { name: 'Administration', allocation: 2500000 },
+                    { name: 'Student Services', allocation: 2000000 },
+                    { name: 'Facilities Management', allocation: 1000000 }
+                ],
+                transactions: [
+                    { date: '2025-09-01', department: 'Research & Development', project: 'Quantum Computing Lab', amount: 500000, description: 'Purchase of specialized hardware.', traceability_id: 'TX-12345-A7B8C' },
+                    { date: '2025-09-03', department: 'Administration', vendor: 'Office Supply Co.', amount: 5000, description: 'Monthly office supplies and stationery.', traceability_id: 'TX-98765-D1E2F' },
+                    { date: '2025-09-05', department: 'Student Services', project: 'Annual Career Fair', amount: 15000, description: 'Catering and venue rental.', traceability_id: 'TX-55443-G3H4I' },
+                    { date: '2025-09-10', department: 'Facilities Management', vendor: 'Maintenance Inc.', amount: 25000, description: 'Routine building maintenance.', traceability_id: 'TX-88776-J5K6L' },
+                    { date: '2025-09-12', department: 'Research & Development', project: 'AI Innovation Hub', amount: 750000, description: 'Software license renewals.', traceability_id: 'TX-22113-M9N0O' }
+                ]
+            };
+
+            // 1. Update Key Metrics
+            const allocated = financialData.departments.reduce((sum, dept) => sum + dept.allocation, 0);
+            const remaining = financialData.totalBudget - allocated;
+
+            document.getElementById('totalBudget').textContent = `$${financialData.totalBudget.toLocaleString()}`;
+            document.getElementById('fundsAllocated').textContent = `$${allocated.toLocaleString()}`;
+            document.getElementById('fundsRemaining').textContent = `$${remaining.toLocaleString()}`;
+
+            // 2. Create the Budget Allocation Chart
+            const ctx = document.getElementById('flowChart').getContext('2d');
+            const departmentNames = financialData.departments.map(dept => dept.name);
+            const departmentAllocations = financialData.departments.map(dept => dept.allocation);
+            
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: departmentNames,
+                    datasets: [{
+                        label: 'Budget Allocation',
+                        data: departmentAllocations,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Budget Distribution by Department',
+                            font: {
+                                size: 18
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 3. Populate the Transaction Table
+            const transactionTableBody = document.querySelector('#transactionTable tbody');
+            financialData.transactions.forEach(transaction => {
+                const row = transactionTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${transaction.date}</td>
+                    <td>${transaction.department}</td>
+                    <td>${transaction.project || transaction.vendor}</td>
+                    <td>$${transaction.amount.toLocaleString()}</td>
+                    <td>${transaction.description}</td>
+                    <td><span class="trace-id">${transaction.traceability_id}</span></td>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
